@@ -37,10 +37,16 @@ class Module
 
         error_reporting(E_ALL | E_STRICT);
 
-        if (is_readable('../config/test.config.php')) {
-            $config = include '../config/test.config.php';
+        // Custom application.config.php
+        if (is_readable('../config/test.application.config.php')) {
+            $config = include '../config/test.application.config.php';
         } else {
-            $config = include __DIR__ . '/../../config/test.config.php.dist';
+            $config = include __DIR__ . '/../../config/test.application.config.php.dist';
+        }
+
+        // Custom module.config.php override
+        if (is_readable('../config/test.module.config.php')) {
+            $config['module_listener_options']['config_glob_paths'][] = '../config/test.module.config.php';
         }
 
         $serviceManager = new ServiceManager(new ServiceManagerConfig());
