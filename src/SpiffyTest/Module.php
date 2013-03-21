@@ -67,7 +67,7 @@ class Module
             $config['module_listener_options']['config_glob_paths'][] = '../config/test.module.config.php';
         }
 
-        $this->initLoader($config['loader_paths']);
+        $this->initLoader(isset($config['loader_paths']) ? $config['loader_paths'] : array());
 
         $serviceManager = new ServiceManager(new ServiceManagerConfig());
         $serviceManager->setService('ApplicationConfig', $config);
