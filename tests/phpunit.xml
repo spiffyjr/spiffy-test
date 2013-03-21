@@ -1,4 +1,4 @@
-<phpunit bootstrap="../Bootstrap.php.dist">
+<phpunit bootstrap="Bootstrap.php">
     <testsuite name="SpiffyTest Test Suite">
         <directory>.</directory>
     </testsuite>

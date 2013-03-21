@@ -8,30 +8,48 @@ use Zend\ServiceManager\ServiceManager;
 class Module
 {
     /**
+     * @var Module
+     */
+    protected static $module = null;
+
+    /**
      * @var bool
      */
-    protected static $loaded = false;
+    protected $loaded = false;
 
     /**
      * @var \Zend\ServiceManager\ServiceManager
      */
-    protected static $serviceManager;
+    protected $serviceManager;
+
+    /**
+     * Static method to get instance.
+     *
+     * @return Module
+     */
+    public static function getInstance()
+    {
+        if (null === self::$module) {
+            self::$module = new Module();
+        }
+        return self::$module;
+    }
 
     /**
      * @return ServiceManager
      */
-    public static function getServiceManager()
+    public function getServiceManager()
     {
-        static::bootstrap();
-        return static::$serviceManager;
+        $this->bootstrap();
+        return $this->serviceManager;
     }
 
     /**
      * Initialize test.
      */
-    public static function bootstrap()
+    public function bootstrap()
     {
-        if (self::$loaded) {
+        if ($this->loaded) {
             return;
         }
 
@@ -49,11 +67,67 @@ class Module
             $config['module_listener_options']['config_glob_paths'][] = '../config/test.module.config.php';
         }
 
+        $this->initLoader($config['loader_paths']);
+
         $serviceManager = new ServiceManager(new ServiceManagerConfig());
         $serviceManager->setService('ApplicationConfig', $config);
         $serviceManager->get('ModuleManager')->loadModules();
 
-        static::$serviceManager = $serviceManager;
-        static::$loaded         = true;
+        $this->serviceManager = $serviceManager;
+        $this->loaded         = true;
+    }
+
+    public function initLoader(array $paths = array())
+    {
+        $vendor  = $this->getParentPath('vendor');
+        $zf2Path = false;
+
+        $loader = null;
+        if (file_exists($vendor . '/autoload.php')) {
+            $loader = include $vendor . '/autoload.php';
+        }
+
+        if (is_dir($vendor . '/ZF2/library')) {
+            $zf2Path = $vendor . '/ZF2/library';
+        } elseif (getenv('ZF2_PATH')) {
+            $zf2Path = getenv('ZF2_PATH');
+        } elseif (get_cfg_var('zf2_path')) {
+            $zf2Path = get_cfg_var('zf2_path');
+        }
+
+        if ($zf2Path) {
+            if (isset($loader)) {
+                $loader->add('Zend', $zf2Path);
+            } else {
+                include $zf2Path . '/Zend/Loader/AutoloaderFactory.php';
+                \Zend\Loader\AutoloaderFactory::factory(array(
+                    'Zend\Loader\StandardAutoloader' => array(
+                        'autoregister_zf' => true
+                    )
+                ));
+            }
+        }
+
+        if ($loader) {
+            foreach($paths as $name => $dir) {
+                $loader->add($name, $dir);
+            }
+        }
+
+        if (!class_exists('Zend\Loader\AutoloaderFactory')) {
+            throw new \RuntimeException('Failed to initialize autoloader');
+        }
+    }
+
+    protected function getParentPath($path)
+    {
+        $dir  = getcwd();
+        $prev = '.';
+        while (!is_dir($dir . '/' . $path)) {
+            $dir = dirname($dir);
+            if ($prev === $dir) return false;
+            $prev = $dir;
+        }
+        return $dir . '/' . $path;
     }
 }
