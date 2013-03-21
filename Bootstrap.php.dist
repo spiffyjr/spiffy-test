@@ -1,0 +1,5 @@
+<?php
+chdir(__DIR__);
+// This path needs to be setup correctly.
+// If you're using composer, the default is likely correct.
+include '../../../vendor/spiffy/spiffy-test/Bootstrap.php';
