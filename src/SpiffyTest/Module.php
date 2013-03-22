@@ -113,10 +113,6 @@ class Module
                 $loader->add($name, $dir);
             }
         }
-
-        if (!class_exists('Zend\Loader\AutoloaderFactory')) {
-            throw new \RuntimeException('Failed to initialize autoloader');
-        }
     }
 
     protected function getParentPath($path)
