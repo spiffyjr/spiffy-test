@@ -3,7 +3,7 @@
     "description": "PHPUnit bootstrapping module for ZF2",
     "homepage": "http://www.github.com/spiffyjr/spiffy-test.git",
     "require": {
-        "php": ">=5.3.3",
+        "php": ">=5.3.3"
     },
     "require-dev": {
         "phpunit/phpunit": "3.*"
