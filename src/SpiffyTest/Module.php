@@ -72,6 +72,7 @@ class Module
         $serviceManager = new ServiceManager(new ServiceManagerConfig());
         $serviceManager->setService('ApplicationConfig', $config);
         $serviceManager->get('ModuleManager')->loadModules();
+        $serviceManager->get('Application')->bootstrap();
 
         $this->serviceManager = $serviceManager;
         $this->loaded         = true;
