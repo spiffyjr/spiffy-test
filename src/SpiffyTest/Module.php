@@ -2,10 +2,11 @@
 
 namespace SpiffyTest;
 
-use Zend\Mvc\Service\ServiceManagerConfig;
+use Zend\ModuleManager\Feature\ConfigProviderInterface;
+use Zend\Mvc\Application;
 use Zend\ServiceManager\ServiceManager;
 
-class Module
+class Module implements ConfigProviderInterface
 {
     /**
      * @var Module
@@ -13,14 +14,9 @@ class Module
     protected static $module = null;
 
     /**
-     * @var bool
+     * @var \Zend\Mvc\Application
      */
-    protected $loaded = false;
-
-    /**
-     * @var \Zend\ServiceManager\ServiceManager
-     */
-    protected $serviceManager;
+    protected $application;
 
     /**
      * Static method to get instance.
@@ -36,12 +32,27 @@ class Module
     }
 
     /**
+     * @return array
+     */
+    public function getApplicationConfig()
+    {
+        return $this->getServiceManager()->get('ApplicationConfig');
+    }
+
+    /**
      * @return ServiceManager
      */
     public function getServiceManager()
     {
-        $this->bootstrap();
-        return $this->serviceManager;
+        return $this->getApplication()->getServiceManager();
+    }
+
+    /**
+     * Reset to clean start.
+     */
+    public function reset()
+    {
+        $this->application = null;
     }
 
     /**
@@ -49,7 +60,7 @@ class Module
      */
     public function bootstrap()
     {
-        if ($this->loaded) {
+        if ($this->application) {
             return;
         }
 
@@ -68,14 +79,18 @@ class Module
         }
 
         $this->initLoader(isset($config['loader_paths']) ? $config['loader_paths'] : array());
+        unset($config['loader_paths']);
 
-        $serviceManager = new ServiceManager(new ServiceManagerConfig());
-        $serviceManager->setService('ApplicationConfig', $config);
-        $serviceManager->get('ModuleManager')->loadModules();
-        $serviceManager->get('Application')->bootstrap();
+        $this->application = Application::init($config);
+    }
 
-        $this->serviceManager = $serviceManager;
-        $this->loaded         = true;
+    /**
+     * @return \Zend\Mvc\Application
+     */
+    public function getApplication()
+    {
+        $this->bootstrap();
+        return $this->application;
     }
 
     public function initLoader(array $paths = array())
@@ -126,5 +141,15 @@ class Module
             $prev = $dir;
         }
         return $dir . '/' . $path;
+    }
+
+    /**
+     * Returns configuration to merge with application configuration
+     *
+     * @return array|\Traversable
+     */
+    public function getConfig()
+    {
+        return include __DIR__ . '/../../config/module.config.php';
     }
 }
