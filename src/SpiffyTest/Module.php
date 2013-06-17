@@ -66,16 +66,20 @@ class Module implements ConfigProviderInterface
 
         error_reporting(E_ALL | E_STRICT);
 
-        // Custom application.config.php
         if (is_readable('../config/test.application.config.php')) {
+            // for backwards compatibility
             $config = include '../config/test.application.config.php';
+        } else if (is_readable('./application.config.php')) {
+            $config = include './application.config.php';
         } else {
-            $config = include __DIR__ . '/../../config/test.application.config.php.dist';
+            $config = include __DIR__ . '/../application.config.php.dist';
         }
 
-        // Custom module.config.php override
         if (is_readable('../config/test.module.config.php')) {
-            $config['module_listener_options']['config_glob_paths'][] = '../config/test.module.config.php';
+            // for backwards compatibility
+            $config = include '../config/test.module.config.php';
+        } else if (is_readable('./module.config.php')) {
+            $config['module_listener_options']['config_glob_paths'][] = './module.config.php';
         }
 
         $this->initLoader(isset($config['loader_paths']) ? $config['loader_paths'] : array());

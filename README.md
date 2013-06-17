@@ -16,3 +16,23 @@ php composer.phar require spiffy/spiffy-test:0.*
    test specific module overrides (i.e., removing memcache in favor of array cache).
 
 Installation without composer is not officially supported and requires you to setup autoloading on your own.
+
+## Usage
+
+Using SpiffyTest involves setting up your testing bootstrap, module config, and application config (optional).
+
+1. copy `bootstrap.php.dist` to your `test` directory and rename to `bootstrap.php`. Setup `phpunit.xml` to use this
+   as your bootstrap file.
+2. copy `module.config.php.dist` to your `test` directory and rename to `module.config.php`. Be sure to leave `SpiffyTest`
+   in your list of modules!
+3. if you have a custom application.config.php requirement then copy `application.config.php.dist` to your `test` directory
+   and rename to `application.config.php`.
+
+Once everything is setup you can access the Module singleton by using `\SpiffyTest\Module::getInstance()`. This class
+has helper methods availabe such as `getApplication()`, `getServiceManager()` and `getApplicationConfig()` for testing a mvc stack. You can
+reset everything by using the `reset()` method.
+
+### Controllers
+
+SpiffyTest comes with `\SpiffyTest\Controller\AbstractHttpControllerTestCase` which is a customized controller test case
+that uses SpiffyTest's application. To use, simply have your tests extend the class.
