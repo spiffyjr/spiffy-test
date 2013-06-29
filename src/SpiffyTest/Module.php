@@ -2,6 +2,7 @@
 
 namespace SpiffyTest;
 
+use Zend\Loader\AutoloaderFactory;
 use Zend\ModuleManager\Feature\ConfigProviderInterface;
 use Zend\Mvc\Application;
 use Zend\ServiceManager\ServiceManager;
@@ -66,19 +67,13 @@ class Module implements ConfigProviderInterface
 
         error_reporting(E_ALL | E_STRICT);
 
-        if (is_readable('../config/test.application.config.php')) {
-            // for backwards compatibility
-            $config = include '../config/test.application.config.php';
-        } else if (is_readable('./application.config.php')) {
+        if (is_readable('./application.config.php')) {
             $config = include './application.config.php';
         } else {
-            $config = include __DIR__ . '/../application.config.php.dist';
+            $config = include __DIR__ . '/../../application.config.php.dist';
         }
 
-        if (is_readable('../config/test.module.config.php')) {
-            // for backwards compatibility
-            $config = include '../config/test.module.config.php';
-        } else if (is_readable('./module.config.php')) {
+        if (is_readable('./module.config.php')) {
             $config['module_listener_options']['config_glob_paths'][] = './module.config.php';
         }
 
@@ -97,6 +92,11 @@ class Module implements ConfigProviderInterface
         return $this->application;
     }
 
+    /**
+     * Initialize the auto loader.
+     *
+     * @param array $paths
+     */
     public function initLoader(array $paths = array())
     {
         $vendor  = $this->getParentPath('vendor');
@@ -120,28 +120,37 @@ class Module implements ConfigProviderInterface
                 $loader->add('Zend', $zf2Path);
             } else {
                 include $zf2Path . '/Zend/Loader/AutoloaderFactory.php';
-                \Zend\Loader\AutoloaderFactory::factory(array(
-                    'Zend\Loader\StandardAutoloader' => array(
-                        'autoregister_zf' => true
+
+                AutoloaderFactory::factory(
+                    array(
+                        'Zend\Loader\StandardAutoloader' => array(
+                            'autoregister_zf' => true
+                        )
                     )
-                ));
+                );
             }
         }
 
         if ($loader) {
-            foreach($paths as $name => $dir) {
+            foreach ($paths as $name => $dir) {
                 $loader->add($name, $dir);
             }
         }
     }
 
+    /**
+     * @param $path
+     * @return bool|string
+     */
     protected function getParentPath($path)
     {
         $dir  = getcwd();
         $prev = '.';
         while (!is_dir($dir . '/' . $path)) {
             $dir = dirname($dir);
-            if ($prev === $dir) return false;
+            if ($prev === $dir) {
+                return false;
+            }
             $prev = $dir;
         }
         return $dir . '/' . $path;

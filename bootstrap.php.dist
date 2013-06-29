@@ -5,7 +5,9 @@ $dir  = getcwd();
 $prev = '.';
 while (!is_dir($dir . '/vendor')) {
     $dir = dirname($dir);
-    if ($prev === $dir) return false;
+    if ($prev === $dir) {
+        return false;
+    }
     $prev = $dir;
 }
 
