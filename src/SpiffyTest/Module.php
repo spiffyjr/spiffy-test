@@ -2,10 +2,12 @@
 
 namespace SpiffyTest;
 
-use Zend\Loader\AutoloaderFactory;
 use Zend\ModuleManager\Feature\ConfigProviderInterface;
 use Zend\Mvc\Application;
 use Zend\ServiceManager\ServiceManager;
+
+// for backwards compatability, will be removed in future
+require_once __DIR__ . '/../../autoload.php';
 
 class Module implements ConfigProviderInterface
 {
@@ -77,9 +79,6 @@ class Module implements ConfigProviderInterface
             $config['module_listener_options']['config_glob_paths'][] = './module.config.php';
         }
 
-        $this->initLoader(isset($config['loader_paths']) ? $config['loader_paths'] : array());
-        unset($config['loader_paths']);
-
         $this->application = Application::init($config);
     }
 
@@ -90,70 +89,6 @@ class Module implements ConfigProviderInterface
     {
         $this->bootstrap();
         return $this->application;
-    }
-
-    /**
-     * Initialize the auto loader.
-     *
-     * @param array $paths
-     */
-    public function initLoader(array $paths = array())
-    {
-        $vendor  = $this->getParentPath('vendor');
-        $zf2Path = false;
-
-        $loader = null;
-        if (file_exists($vendor . '/autoload.php')) {
-            $loader = include $vendor . '/autoload.php';
-        }
-
-        if (is_dir($vendor . '/ZF2/library')) {
-            $zf2Path = $vendor . '/ZF2/library';
-        } elseif (getenv('ZF2_PATH')) {
-            $zf2Path = getenv('ZF2_PATH');
-        } elseif (get_cfg_var('zf2_path')) {
-            $zf2Path = get_cfg_var('zf2_path');
-        }
-
-        if ($zf2Path) {
-            if (isset($loader)) {
-                $loader->add('Zend', $zf2Path);
-            } else {
-                include $zf2Path . '/Zend/Loader/AutoloaderFactory.php';
-
-                AutoloaderFactory::factory(
-                    array(
-                        'Zend\Loader\StandardAutoloader' => array(
-                            'autoregister_zf' => true
-                        )
-                    )
-                );
-            }
-        }
-
-        if ($loader) {
-            foreach ($paths as $name => $dir) {
-                $loader->add($name, $dir);
-            }
-        }
-    }
-
-    /**
-     * @param $path
-     * @return bool|string
-     */
-    protected function getParentPath($path)
-    {
-        $dir  = getcwd();
-        $prev = '.';
-        while (!is_dir($dir . '/' . $path)) {
-            $dir = dirname($dir);
-            if ($prev === $dir) {
-                return false;
-            }
-            $prev = $dir;
-        }
-        return $dir . '/' . $path;
     }
 
     /**
