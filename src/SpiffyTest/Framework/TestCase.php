@@ -22,4 +22,9 @@ class TestCase extends \PHPUnit_Framework_TestCase
     {
         return $this->getServiceManager()->get('ControllerLoader')->get($name);
     }
+
+    public function reset()
+    {
+        SpiffyTest::getInstance()->reset();
+    }
 }
