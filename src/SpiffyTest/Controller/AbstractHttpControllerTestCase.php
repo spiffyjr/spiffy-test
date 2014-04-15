@@ -43,9 +43,10 @@ class AbstractHttpControllerTestCase extends BaseController
     }
 
     /**
+     * @param bool $keepPersistence
      * @return \Zend\Test\PHPUnit\Controller\AbstractControllerTestCase
      */
-    public function reset()
+    public function reset($keepPersistence = false)
     {
         $this->spiffyApplication = null;
         SpiffyTest::getInstance()->reset();
